@@ -1,0 +1,7 @@
+
+NERD_*
+tmp
+*swp
+*.DS_Store
+*pyc
+*sqlite

@@ -1,0 +1,80 @@
+require "rake-pipeline-web-filters"
+require 'rake-pipeline-web-filters/filter_with_dependencies'
+
+require "./rakep/filters"
+
+Encoding.default_external = Encoding::UTF_8
+Encoding.default_internal = Encoding::UTF_8
+
+
+
+outputName = "app.js"
+
+
+# TODO: foreman .env (see heroku tools)
+output "tmp/source"
+input "app"  do
+
+	match "submodules/ember.js/packages/ember-handlebars-compiler/lib/main.js" do
+   filter Rakep::EmberStub
+	 concat "ember-template-compiler.js"
+	end
+
+end
+
+input "app"  do
+
+	match "templates/**/*.handlebars" do
+    filter Rakep::CustomHandlebarsPrecompiler, :inline => false
+		concat outputName
+		filter Rakep::AddHandlebarsDependencies
+	end
+
+	match "app/lib/**/*.js" do
+		minispade :rewrite_requires => true, :string=> false, :module_id_generator => proc { |input|
+			id = input.path.dup
+			id.sub!('/lib/', '/')
+			id.sub!(/\.js$/, '')
+			id.sub!(/\/main$/, '')
+			id
+		}
+		concat outputName
+	end
+
+	match "submodules/*/packages/{ember-inflector,ember-metal,rsvp,container,ember-runtime,ember-extension-support,ember-application,ember-routing,ember-debug,ember-states,ember-views,metamorph,ember-handlebars-compiler,ember-handlebars}/lib/**/.js" do
+		minispade :rewrite_requires => true, :string=> false, :module_id_generator => proc { |input|
+			id = input.path.dup
+			id.sub!('submodules/', '')
+			id.sub!(/[a-z\-\.]+\//, '')
+			id.sub!('packages/', '')
+			id.sub!('/lib/', '/')
+			id.sub!(/\.js$/, '')
+			id.sub!(/\/main$/, '')
+			id
+		}
+    filter Rakep::CustomHandlebarsPrecompiler, :inline => true
+    filter Rakep::AddMicroLoader, :global => true
+	  concat outputName
+	end
+
+  match "vendor/*.js" do
+		concat outputName
+  end
+
+end
+
+
+
+minified = false
+
+output "public"
+input "tmp/source"  do
+
+	match outputName do
+
+		concat outputName
+
+	end
+
+end
+# vim: filetype=ruby
