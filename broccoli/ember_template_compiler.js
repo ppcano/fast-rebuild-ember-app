@@ -1,7 +1,9 @@
-var fs = require('fs');
+var fs = require('fs'),
+    path = require('path');
 
 
 module.exports = function(input, output) {
+
 
   var result = "(function() {\nvar Ember = { assert: function() {}, FEATURES: { isEnabled: function() {} } };\n"
 
@@ -14,6 +16,10 @@ module.exports = function(input, output) {
   result += "\nexports.EmberHandlebars = EmberHandlebars;"
   result += "\n})();"
 
+  var directory = path.dirname(output);
+  if (!fs.existsSync(directory)) {
+    fs.mkdirSync(directory);
+  }
+
   fs.writeFileSync(output, result);
 };
-

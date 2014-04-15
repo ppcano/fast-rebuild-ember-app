@@ -14,6 +14,11 @@ class EmberTemplateCompiler
       out << "\nexports.EmberHandlebars = EmberHandlebars;"
       out << "\n})();"
 
+
+      directory = File.dirname(outputPath);
+      Dir.mkdir(directory) unless File.exist? directory
+         
+
       File.open(outputPath, 'w') do |file| 
         file.write(out) 
       end
