@@ -10,6 +10,7 @@ GIT
 GIT
   remote: https://github.com/wycats/rake-pipeline-web-filters.git
   revision: 1da44c399c11766064638d58d0348f61c3cc473f
+  branch: master
   specs:
     rake-pipeline-web-filters (0.6.0)
       rack
@@ -21,8 +22,7 @@ GEM
     backports (3.6.0)
     daemons (1.1.9)
     eventmachine (1.0.3)
-    execjs (1.2.13)
-      multi_json (~> 1.0)
+    execjs (2.0.2)
     json (1.8.1)
     multi_json (1.9.2)
     rack (1.5.2)
@@ -53,7 +53,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  execjs (~> 1.2.6)
+  execjs (~> 2.0.2)
   rake-pipeline!
   rake-pipeline-web-filters!
   sinatra

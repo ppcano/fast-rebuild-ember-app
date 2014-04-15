@@ -1,6 +1,6 @@
 
 require 'sinatra'
-require './app'
+require './sinatra/app'
 
 $stdout.sync = true
 

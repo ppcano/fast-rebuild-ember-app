@@ -7,11 +7,13 @@ include ERB::Util
 
 class App < Sinatra::Base
 
+  set :public_dir, 'public'
+
   configure :development do
     register Sinatra::Reloader
   end
 
-  get '/' do
+  get '/*' do
     erb :index
   end
 

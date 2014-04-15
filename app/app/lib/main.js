@@ -1,1 +1,6 @@
-console.log('hi.. main.js');
+import 'app/templates';
+import App from 'app/system/application';
+
+window.App = App.create({
+
+});

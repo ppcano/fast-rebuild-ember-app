@@ -1,79 +1,110 @@
 require "rake-pipeline-web-filters"
-require 'rake-pipeline-web-filters/filter_with_dependencies'
+require "./rakep/ember_template_compiler"
+require "./rakep/self_executing_filter"
+require "./rakep/append_filter"
+require "./rakep/precompiler_filter"
+require "./rakep/es6_filter"
 
-require "./rakep/filters"
+ES6ModuleFilter = RubyES6::RakeFilter
 
 Encoding.default_external = Encoding::UTF_8
 Encoding.default_internal = Encoding::UTF_8
 
 
+# prepare handlebars compiler to precompile at the server side
+puts 'Generating ember-handlebars-precompiler...'
+input_file = "app/submodules/ember.js/packages_es6/ember-handlebars-compiler/lib/main.js"
+compiler_path = "tmp/ember-handlebars-compiler.js"
+EmberTemplateCompiler.generate(input_file, compiler_path)
 
-outputName = "app.js"
+#  Configure handlebars precompiler: handlebars and handlebars compiler paths
+handlebars_path = "app/vendor/handlebars-v1.3.0.js" # or gem Handlebars::Source.bundled_path
+HandlebarsPrecompilerFilter.configure(compiler_path, handlebars_path)
 
-
-# TODO: foreman .env (see heroku tools)
-output "tmp/source"
+output_name = "output.js"
+output "tmp"
 input "app"  do
+  
+  # precompile templates
+  # concat multiple files
+  # require dependencies with es6 syntax ( optional depending on the import sequence)
+  # convert to amd
+  match "templates/**/*.handlebars" do
+    filter HandlebarsPrecompilerFilter, template_path_root: "templates/"
+		concat output_name
+    filter AppendFilter, before: true, content: "import Ember from \"ember-metal/core\";\n import \"ember\";"
+    filter ES6ModuleFilter, moduleName: 'app/templates'
+  end
 
-	match "submodules/ember.js/packages/ember-handlebars-compiler/lib/main.js" do
-   filter Rakep::EmberStub
-	 concat "ember-template-compiler.js"
-	end
+  match "app/lib/**/*.js" do
 
-end
-
-input "app"  do
-
-	match "templates/**/*.handlebars" do
-    filter Rakep::CustomHandlebarsPrecompiler, :inline => false
-		concat outputName
-		filter Rakep::AddHandlebarsDependencies
-	end
-
-	match "app/lib/**/*.js" do
-		minispade :rewrite_requires => true, :string=> false, :module_id_generator => proc { |input|
+    filter ES6ModuleFilter, :module_id_generator => proc { |input|
 			id = input.path.dup
 			id.sub!('/lib/', '/')
 			id.sub!(/\.js$/, '')
 			id.sub!(/\/main$/, '')
 			id
-		}
-		concat outputName
-	end
+    }
+		concat output_name
+  end
+  match "submodules/ember.js/packages/{rsvp,metamorph}/lib/main.js" do
+		concat output_name
+  end
 
-	match "submodules/*/packages/{ember-inflector,ember-metal,rsvp,container,ember-runtime,ember-extension-support,ember-application,ember-routing,ember-debug,ember-states,ember-views,metamorph,ember-handlebars-compiler,ember-handlebars}/lib/**/.js" do
-		minispade :rewrite_requires => true, :string=> false, :module_id_generator => proc { |input|
+  match "submodules/ember.js/packages/ember/lib/main.js" do
+    filter ES6ModuleFilter, moduleName: 'ember'
+		concat output_name
+  end
+
+  # concat amd files (do not need to be converted)
+  match "submodules/ember.js/packages_es6/*/lib/**/*.amd.js" do
+		concat output_name
+  end
+
+  match "submodules/ember-jj-abrams-resolver/packages/ember-resolver/lib/core.js" do
+		concat output_name
+  end
+
+  # convert ember packages to amd
+  match /submodules\/ember\.js\/packages_es6\/(ember-handlebars-compiler|container|ember-application|ember-debug|ember-extension-support|ember-handlebars|ember-metal|ember-routing|ember-runtime|ember-views)\/lib\/[^\s]+(?<!\.amd)\.js$/ do
+    filter ES6ModuleFilter, :module_id_generator => proc { |input|
 			id = input.path.dup
-			id.sub!('submodules/', '')
-			id.sub!(/[a-z\-\.]+\//, '')
-			id.sub!('packages/', '')
+			id.sub!('submodules/ember.js/packages_es6/', '')
 			id.sub!('/lib/', '/')
 			id.sub!(/\.js$/, '')
 			id.sub!(/\/main$/, '')
 			id
-		}
-    filter Rakep::CustomHandlebarsPrecompiler, :inline => true
-    filter Rakep::AddMicroLoader, :global => true
-	  concat outputName
-	end
+    }
+    filter HandlebarsPrecompilerFilter, is_inline: true
+		concat output_name
+  end
 
-  match "vendor/*.js" do
-		concat outputName
+  # Add Handlebars to global window to be accessible at ember-handlebars-compiler
+  # otherwise, require('handlebars') fails
+  match "vendor/handlebars.runtime-v1.3.0.js" do
+    filter AppendFilter, before: false, content: "\nwindow.Handlebars = Handlebars\n"
+    filter SelfExecutingFilter
+		concat output_name
+  end
+
+  match "vendor/jquery-1.9.1.js" do
+		concat output_name
   end
 
 end
 
 
-
-minified = false
+loader_path = "app/submodules/ember.js/packages/loader/lib/main.js"
 
 output "public"
-input "tmp/source"  do
+input "tmp"  do
 
-	match outputName do
+	match /^#{output_name}$/ do
+    filter SelfExecutingFilter
 
-		concat outputName
-
+    #load ember loader impl and provides  global vars: define, requireModule, require, requirejs, Ember
+    filter AppendFilter, before: true, path: loader_path
+		concat "app.js"
 	end
 
 end
