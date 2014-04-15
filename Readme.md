@@ -1,7 +1,11 @@
-# Fast Rebuil Ember App Structure
+# Fast Rebuil Ember App
 
-Ember app project structure running "partial/fast" rebuilds with [Broccoli](https://github.com/joliss/broccoli) and
+Demo app (first draft) running "partial/fast" rebuilds with [Broccoli](https://github.com/joliss/broccoli) and
 [Rake::Pipeline](https://github.com/livingsocial/rake-pipeline)
+
+The broccoli and rake pipeline configuration with the collection of plugins and filters could be
+useful to anyone interested on running any similar build process.
+
 
 
 # Setup

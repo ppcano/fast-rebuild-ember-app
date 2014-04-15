@@ -54906,7 +54906,8 @@ define("app/controllers/account",
     var AccountRoute = Ember.Route.extend({
 
       model: function() {
-          console.log('!!>>>>>>kjkjkfetch account model.');
+
+          console.log('   ------------- !!kjkfetch account model.');
       }
 
     });
