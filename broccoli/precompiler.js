@@ -14,12 +14,14 @@ function Filter (inputTree, options) {
   this.inputTree = inputTree;
   this.options = options || {};
 
+  if (this.options.extensions != null) this.extensions = this.options.extensions
+  if (this.options.targetExtension != null) this.targetExtension = this.options.targetExtension
+
   if ( !this.module ) {
     throw new Error('set prototype.module with CreatePrecompilerModule');
   }
 }
 
-// TODO: broccoli-filter extensions do not work as constructor parameters
 Filter.prototype.extensions = ['handlebars', 'hbs', 'js']
 
 

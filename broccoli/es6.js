@@ -12,6 +12,9 @@ function Filter(inputTree, options) {
   }
   this.inputTree = inputTree;
   this.setOptions(options);
+
+  if (this.options.extensions != null) this.extensions = this.options.extensions
+  if (this.options.targetExtension != null) this.targetExtension = this.options.targetExtension
 }
 
 Filter.prototype.defaults = {
@@ -23,8 +26,6 @@ Filter.prototype.defaults = {
 };
 
 Filter.prototype.extensions = ['js']
-
-Filter.prototype.targetExtension = 'js'
 
 Filter.prototype.setOptions = function(options) {
   var merged = extend({}, this.defaults, options);

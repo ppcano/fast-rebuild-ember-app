@@ -11,10 +11,12 @@ function Filter (inputTree, options) {
   }
   this.inputTree = inputTree;
   this.options = options || {};
+
+  if (this.options.extensions != null) this.extensions = this.options.extensions
+  if (this.options.targetExtension != null) this.targetExtension = this.options.targetExtension
 }
 
 Filter.prototype.extensions = ['js']
-Filter.prototype.targetExtension = 'js'
 
 
 
