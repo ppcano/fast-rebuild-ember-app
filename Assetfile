@@ -1,5 +1,6 @@
 require "rake-pipeline-web-filters"
 require "./rakep/ember_template_compiler"
+require "./rakep/defeaturify_filter"
 require "./rakep/self_executing_filter"
 require "./rakep/append_filter"
 require "./rakep/precompiler_filter"
@@ -75,6 +76,8 @@ input "app"  do
 			id.sub!(/\/main$/, '')
 			id
     }
+
+    filter EmberDefeatureifyFilter
     filter HandlebarsPrecompilerFilter, is_inline: true
 		concat output_name
   end

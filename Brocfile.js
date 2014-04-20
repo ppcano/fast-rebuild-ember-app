@@ -1,5 +1,6 @@
 var mergeTrees = require('broccoli-merge-trees'),
     es6Filter = require('./broccoli/es6'),
+    defeatureifyFilter = require('./broccoli/defeatureify'),
     fs = require('fs'),
     match = require('./broccoli/match'),
     precompiler = require('./broccoli/precompiler').Filter,
@@ -48,6 +49,8 @@ var es6Options = { moduleGenerator: function(filePath) {
                   anonymous: false };
 
 
+
+
 // templates
 templates = precompiler(templates, {templateNameGenerator: function(filePath) {
   return filePath.replace('app/templates/','')
@@ -60,7 +63,13 @@ templates = es6Filter(templates, {anonymous: false,
                                   moduleGenerator: 'app/templates'});
 
 // emberModules
+                                  
 emberModules = es6Filter(emberModules, es6Options);
+
+//var features = match('.', 'ember_features.json'); // if a tree is passed, auto-rebuild whenever the file change
+var defeatureifyOptions = JSON.parse(fs.readFileSync('ember_features.json', 'utf8'));
+
+emberModules = defeatureifyFilter(emberModules, {options: defeatureifyOptions});
 emberModules = precompiler(emberModules);
 
 // emberMain

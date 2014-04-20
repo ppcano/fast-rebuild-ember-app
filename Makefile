@@ -6,11 +6,12 @@ server:
 
 serve:
 	
+	rm -rf dist tmp
 	broccoli serve --port 9000
 
 build:
 	
-	rm -rf dist
+	rm -rf dist tmp
 	broccoli build dist
 
 .PHONY: server build

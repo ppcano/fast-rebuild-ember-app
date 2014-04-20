@@ -28,6 +28,7 @@ git submodule update --init
 
 # Setup and run sinatra app with rake pipeline
 
+- npm install
 - bundle install
 - make server
 
