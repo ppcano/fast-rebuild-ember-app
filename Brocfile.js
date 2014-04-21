@@ -9,6 +9,7 @@ var mergeTrees = require('broccoli-merge-trees'),
     emberTemplateCompiler = require('./broccoli/ember_template_compiler'),
     append = require('./broccoli/append'),
     concatFilter = require('./broccoli/concat'),
+    moveFile = require('broccoli-file-mover'),
     pickFiles = require('broccoli-static-compiler');
 
 
@@ -92,5 +93,12 @@ trees = append(trees, {before: true, path: "app/submodules/ember.js/packages/loa
 // index
 index = concatFilter(index, 'index.html');
 
-trees = new mergeTrees([index, trees])
+//css
+var styles = moveFile('app', {
+  srcFile: 'styles/app.css',
+  destFile: '/app.css'
+});
+
+
+trees = new mergeTrees([index, trees, styles])
 module.exports = trees;
