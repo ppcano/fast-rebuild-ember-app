@@ -21,7 +21,7 @@ git submodule update --init
 # Setup and run broccoli live reloading
 
 - npm install
-- broccoli serve
+- `make serve` or `make test` (run the test suite)
 
 > see Brocfile.js and [broccoli folder](https://github.com/ppcano/fast-rebuild-ember-app/tree/master/broccoli).
 
@@ -34,3 +34,5 @@ git submodule update --init
 
 > check Assetfile.rb and [rakep
 folder](https://github.com/ppcano/fast-rebuild-ember-app/tree/master/rakep).
+
+> tests are not running with rakep

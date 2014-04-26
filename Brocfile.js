@@ -2,6 +2,8 @@ var mergeTrees = require('broccoli-merge-trees'),
     es6Filter = require('./broccoli/es6'),
     defeatureifyFilter = require('./broccoli/defeatureify'),
     fs = require('fs'),
+    replace = require('./broccoli/replace'),
+    wrapFiles = require('broccoli-wrap'),
     match = require('./broccoli/match'),
     precompiler = require('./broccoli/precompiler').Filter,
     createPrecompilerModule = require('./broccoli/precompiler').CreatePrecompilerModule,
@@ -12,6 +14,7 @@ var mergeTrees = require('broccoli-merge-trees'),
     moveFile = require('broccoli-file-mover'),
     pickFiles = require('broccoli-static-compiler');
 
+var runningTest = process.env.RUNNING_TEST === 'true';
 
 
 // This file creation is only done at the design process
@@ -31,23 +34,23 @@ var emberResolver = match('app', 'submodules/ember-jj-abrams-resolver/packages/*
 var emberAmdLibs = match('app', 'submodules/ember.js/packages_es6/*/lib/**/*.amd.js');
 var emberLibs = match('app', 'submodules/ember.js/packages/{rsvp,metamorph}/lib/main.js');
 var emberModules = match('app', 'submodules/ember.js/packages_es6/*/lib/**/!(*.amd).js');//https://github.com/isaacs/node-glob/issues/62
-var emberMain = match('app', 'submodules/ember.js/packages/ember/lib/main.js');
 var handlebarsRuntime = match('app', 'vendor/handlebars.runtime-v1.3.0.js');
 var jquery = match('app', 'vendor/jquery-1.9.1.js');
 var templates = match('app', 'templates/**/*.handlebars');
-var index = match('broccoli', 'index.html')
 
 
+//var emberMain = match('app', 'submodules/ember.js/packages/ember/lib/main.js');
+var emberMain = match('app', 'shims/ember.js');
 
-var es6Options = { moduleGenerator: function(filePath) {
+
+var es6Options = function(filePath) {
                     return filePath.replace('app/app', 'app')
                                    .replace('app/submodules/ember.js/packages/','')
                                    .replace('app/submodules/ember.js/packages_es6/','')
                                    .replace('lib/','')
                                    .replace(/.js$/, '')
                                    .replace(/\/main$/, '');
-                  }, 
-                  anonymous: false };
+                  };
 
 
 
@@ -60,8 +63,7 @@ templates = precompiler(templates, {templateNameGenerator: function(filePath) {
 templates = concatFilter(templates, 'templates.js');
 
 templates = append(templates, {before: true, content: "import Ember from \"ember-metal/core\";\n import \"ember\";"});
-templates = es6Filter(templates, {anonymous: false,
-                                  moduleGenerator: 'app/templates'});
+templates = es6Filter(templates, 'app/templates');
 
 // emberModules
                                   
@@ -74,7 +76,7 @@ emberModules = defeatureifyFilter(emberModules, {options: defeatureifyOptions});
 emberModules = precompiler(emberModules);
 
 // emberMain
-emberMain = es6Filter(emberMain, es6Options);
+//emberMain = es6Filter(emberMain, es6Options);
 
 // handlebarsRuntime
 handlebarsRuntime = append(handlebarsRuntime, {before: false, content: "\nwindow.Handlebars = Handlebars\n"});
@@ -85,20 +87,54 @@ app = es6Filter(app, es6Options);
 
 // compose and build app.js
 var trees = [app, emberResolver, emberAmdLibs, emberLibs, emberMain, emberModules, handlebarsRuntime, jquery, templates];
+
+// ember-qunit
+
+if ( runningTest ) {
+
+  var emberQunit = match('app', 'submodules/ember-qunit/lib/**/*.js');
+  emberQunit = es6Filter(emberQunit, { compatFix: true, 
+                                       moduleGenerator: function(filePath) {
+                                         return filePath.replace('app/submodules/', '')
+                                           .replace('lib/','')
+                                           .replace(/.js$/, '');
+                                           //.replace(/\/main$/, '');  #issue: https://github.com/rpflorence/ember-qunit/issues/42 
+                                   }  
+  });
+
+  //var emberQunit = match('app', 'submodules/ember-qunit/dist/named-amd/*.js');
+  //emberQunit = replace(emberQunit, { match: /\"ember-qunit\"/g, replacement: "\"ember-qunit\/main\"" } );
+
+  trees.push(emberQunit);
+
+  var emberTests = match('app', 'tests/**/*_test.js');
+  emberTests = concatFilter(emberTests, 'tests.js');
+
+}
 trees = new mergeTrees(trees)
 trees = concatFilter(trees, 'app.js');
 trees = selfExecuting(trees);
 trees = append(trees, {before: true, path: "app/submodules/ember.js/packages/loader/lib/main.js"});
 
-// index
-index = concatFilter(index, 'index.html');
 
-//css
-var styles = moveFile('app', {
-  srcFile: 'styles/app.css',
-  destFile: '/app.css'
-});
+var publicFiles;
 
+if ( runningTest ) {
 
-trees = new mergeTrees([index, trees, styles])
+  publicFiles = pickFiles('app', {
+    srcDir: '/tests',
+    destDir: '/' });
+
+  trees = [publicFiles, trees, emberTests];
+
+} else {
+
+  publicFiles = pickFiles('broccoli_public', {
+    srcDir: '/',
+    destDir: '/' });
+
+  trees = [publicFiles, trees]
+}
+
+trees = new mergeTrees(trees)
 module.exports = trees;
