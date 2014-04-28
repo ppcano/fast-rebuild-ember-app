@@ -5,7 +5,7 @@ function registerViews(container, prefix) {
   Ember.keys(requirejs._eak_seen).filter(function(key) {
     return initializersRegExp.test(key);
   }).forEach(function(moduleName) {
-    //console.log('view: '+moduleName);
+    //console.log('register view: '+moduleName);
     var module = require(moduleName, null, null, true);
     if (!module) { throw new Error(moduleName + ' missing.'); }
 

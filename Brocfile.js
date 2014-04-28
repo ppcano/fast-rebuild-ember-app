@@ -107,7 +107,17 @@ if ( runningTest ) {
 
   trees.push(emberQunit);
 
-  var emberTests = match('app', 'tests/**/*_test.js');
+  var testsUtils = match('app', 'tests/lib/**/*.js');
+  testsUtils = es6Filter(testsUtils, function(filePath) {
+                                         return filePath.replace('app/tests/', '')
+                                           .replace('lib/','')
+                                           .replace(/.js$/, '')
+                                           .replace(/\/main$/, '');  
+                                     });
+
+  trees.push(testsUtils);
+
+  var emberTests = match('app', 'tests/tests/**/*_test.js');
   emberTests = concatFilter(emberTests, 'tests.js');
 
 }

@@ -2,7 +2,7 @@ moduleFor('controller:account', 'controller: account XXX', {
 
   teardown: function() {
 
-    if ( App ) { 
+    if ( window.App ) { 
       console.log('controller:account.reset ....');
       App.reset();
     }

@@ -4,3 +4,6 @@
 [submodule "app/submodules/ember-qunit"]
 	path = app/submodules/ember-qunit
 	url = git@github.com:ppcano/ember-qunit.git
+[submodule "app/submodules/ember-jj-abrams-resolver"]
+	path = app/submodules/ember-jj-abrams-resolver
+	url = git@github.com:ppcano/ember-jj-abrams-resolver.git

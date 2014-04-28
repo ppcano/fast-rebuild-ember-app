@@ -1,5 +1,6 @@
 require('ember');
 require('ember-qunit/main').globalize();
+require('ember-qunit-utils');
 
 require('app/templates');
 
@@ -19,11 +20,6 @@ var AppResolver = require('app/system/resolver')['default'];
 */
 
 
-Ember.setupForTesting();
-var resolver = AppResolver.create({
-  modulePrefix: 'app'
-});
-/*
 Ember.ENV.LOG_MODULE_RESOLVER = false;
 App = require('app/system/application')['default'];
 App.initializeAll();
@@ -37,6 +33,10 @@ var namespace = App;
 var resolver = AppResolver.create({
   namespace: namespace
 });
-*/
 
 setResolver(resolver);
+
+
+//
+//
+//
