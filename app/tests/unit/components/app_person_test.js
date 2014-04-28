@@ -1,7 +1,7 @@
 
 var run = Ember.run;
 moduleForComponent('app-person', 'app-person', {
-  setup: function() {
+  teardown: function() {
 
     console.log('app-person.setup:');
     if ( App ) { 
