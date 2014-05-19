@@ -8,6 +8,8 @@ useful to anyone interested on running any similar build process.
 
 
 
+The project is not up-to-date with latest ember packages, check [ember-app](https://github.com/ppcano/ember-app) for an upgraded version which only uses broccoli.
+
 # Setup
 
 Ember packages are included as git submodules (providing easier debugging), you must initialize and update submodules.
